@@ -63,6 +63,9 @@ module.exports = function (app, collection) {
     
     .put(function (req, res) {
       let project_name = 'apitest';
+      if(!req.body._id){
+        res.send({ error: 'missing _id' })
+      }
 
       collection.findOne({ project_name: project_name }, (err, project) => {
         if (err) return console.log(err)
@@ -156,7 +159,7 @@ module.exports = function (app, collection) {
     })
 
     .delete(function (req, res) {
-      if(req.body._id == ''){
+      if(!req.body._id){
         res.send({ error: 'missing _id' })
       }
       let project_name = 'apitest';
