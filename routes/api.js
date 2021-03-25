@@ -17,19 +17,26 @@ module.exports = function (app, collection) {
 
     .post(function (req, res) {
       let project_name = 'apitest'
-      let newIssue = {
-        _id: new ObjectID(),
-        issue_title: req.body.issue_title,
-        issue_text: req.body.issue_text,
-        created_by: req.body.created_by,
-        ... (req.body.assigned_to && { assigned_to: req.body.assigned_to }),
-        ... (req.body.status_text && { status_text: req.body.status_text }),
-        open: true,
-        created_on: new Date(),
-        updated_on: new Date()
+      if(req.body.issue_title || req.body.issue_text|| req.body.created_by){
+        let newIssue = {
+          _id: new ObjectID(),
+          issue_title: req.body.issue_title,
+          issue_text: req.body.issue_text,
+          created_by: req.body.created_by,
+          ... (req.body.assigned_to && { assigned_to: req.body.assigned_to }),
+          ... (req.body.status_text && { status_text: req.body.status_text }),
+          open: true,
+          created_on: new Date(),
+          updated_on: new Date()
+        }
+        collection.updateOne({ project_name: project_name },
+          { $push: { issues: newIssue } })
       }
-      collection.updateOne({ project_name: project_name },
-        { $push: { issues: newIssue } })
+
+      // Required FIELDS aren't filled
+      else{
+        res.send({ error: 'required field(s) missing' })
+      }
     })
     
     .put(function (req, res) {
@@ -112,17 +119,44 @@ module.exports = function (app, collection) {
               _id: req.body._id
             })
           }
+
+          // IF NOTHING GETS UPDATED
+          else{
+            res.send({ error: 'no update field(s) sent', '_id': req.body._id })
+          }
         }
 
         // WHEN ID IS INVALID
         else {
-          res.send('invalid id')
+          res.send({ error: 'could not update', '_id': req.body._id })
         }
       })
     })
 
     .delete(function (req, res) {
-      let project = req.params.project;
+      if(req.body._id == ' '){
+        res.send({ error: 'missing _id' })
+      }
+      let project_name = 'apitest';
+
+      collection.findOne({ project_name: project_name }, (err, project) => {
+        if (err) return console.log(err)
+        let selectedIssues = project.issues
+
+        // WHEN ID IS VALID
+        if (selectedIssues.find(x => x._id == req.body._id)) {
+          collection.updateOne({ project_name: project_name },
+            { $pull: { issues:{ _id: ObjectID(req.body._id)}} })
+          res.send({ result: 'successfully deleted', '_id': req.body_id })
+        }
+
+        //WHEN ID IS INVALID
+        else{
+          res.send({ error: 'could not delete', '_id': req.body_id })
+        }
+
+      })
+
 
     });
 
