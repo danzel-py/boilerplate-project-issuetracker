@@ -11,7 +11,29 @@ module.exports = function (app, collection) {
       collection.findOne({ project_name: project_name }, (err, project) => {
         if (err) return console.log(err)
         if (!project) res.send([])
-        res.send(project.issues)
+        let filteredArray = project.issues
+
+        if(req.query.issue_title){
+          filteredArray = filteredArray.filter(issues => issues.issue_title === req.query.issue_title)
+        }
+        if(req.query.issue_text){
+          filteredArray = filteredArray.filter(issues => issues.issue_text === req.query.issue_text)
+        }
+        if(req.query.assigned_to){
+          filteredArray = filteredArray.filter(issues => issues.assigned_to === req.query.assigned_to)
+        }
+        if(req.query.created_by){
+          filteredArray = filteredArray.filter(issues => issues.created_by === req.query.created_by)
+        }
+        if(req.query.status_text){
+          filteredArray = filteredArray.filter(issues => issues.status_text === req.query.status_text)
+        }
+        let openStatus = req.query.open === 'true' ? true : false
+        if(req.query.open){
+          filteredArray = filteredArray.filter(issues => issues.open == openStatus)
+        }
+
+        res.send(filteredArray)
       })
     })
 
@@ -134,7 +156,7 @@ module.exports = function (app, collection) {
     })
 
     .delete(function (req, res) {
-      if(req.body._id == ' '){
+      if(req.body._id == ''){
         res.send({ error: 'missing _id' })
       }
       let project_name = 'apitest';
