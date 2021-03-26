@@ -10,7 +10,10 @@ module.exports = function (app, collection) {
       let project_name = req.params.project;
       collection.findOne({ project_name: project_name }, (err, project) => {
         if (err) return console.log(err)
-        if (!project) res.send([])
+        if (!project) {
+          collection.insert({ project_name: project_name, issues: []})
+          return res.send([])
+        }
         let filteredArray = project.issues
 
         if(req.query.issue_title){
@@ -38,8 +41,14 @@ module.exports = function (app, collection) {
     })
 
     .post(function (req, res) {
-      let project_name = 'apitest'
-      if(req.body.issue_title || req.body.issue_text|| req.body.created_by){
+      let project_name = req.params.project
+      collection.findOne({ project_name: project_name }, (err, project) => {
+        if (err) return console.log(err)
+        if (!project) {
+          collection.insert({ project_name: project_name, issues: []})
+        }
+      })
+      if(req.body.issue_title && req.body.issue_text && req.body.created_by){
         let newIssue = {
           _id: new ObjectID(),
           issue_title: req.body.issue_title,
@@ -53,6 +62,7 @@ module.exports = function (app, collection) {
         }
         collection.updateOne({ project_name: project_name },
           { $push: { issues: newIssue } })
+        res.send(newIssue)
       }
 
       // Required FIELDS aren't filled
@@ -62,9 +72,9 @@ module.exports = function (app, collection) {
     })
     
     .put(function (req, res) {
-      let project_name = 'apitest';
+      let project_name = req.params.project;
       if(!req.body._id){
-        res.send({ error: 'missing _id' })
+        return res.send({ error: 'missing _id' })
       }
 
       collection.findOne({ project_name: project_name }, (err, project) => {
@@ -159,10 +169,11 @@ module.exports = function (app, collection) {
     })
 
     .delete(function (req, res) {
+      // NO ID
       if(!req.body._id){
         res.send({ error: 'missing _id' })
       }
-      let project_name = 'apitest';
+      let project_name = req.params.project;
 
       collection.findOne({ project_name: project_name }, (err, project) => {
         if (err) return console.log(err)
