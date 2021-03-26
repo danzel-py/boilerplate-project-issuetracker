@@ -50,13 +50,13 @@ module.exports = function (app, collection) {
       })
       if(req.body.issue_title && req.body.issue_text && req.body.created_by){
         let newIssue = {
+          ... (req.body.assigned_to ? { assigned_to: req.body.assigned_to }:{ assigned_to: ''}),
+          ... (req.body.status_text ? { status_text: req.body.status_text }:{ status_text: ''}),
+          open: true,
           _id: new ObjectID(),
           issue_title: req.body.issue_title,
           issue_text: req.body.issue_text,
           created_by: req.body.created_by,
-          ... (req.body.assigned_to && { assigned_to: req.body.assigned_to }),
-          ... (req.body.status_text && { status_text: req.body.status_text }),
-          open: true,
           created_on: new Date(),
           updated_on: new Date()
         }
