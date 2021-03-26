@@ -170,8 +170,8 @@ module.exports = function (app, collection) {
 
     .delete(function (req, res) {
       // NO ID
-      if(!req.body._id){
-        res.send({ error: 'missing _id' })
+      if(req.body._id === null){
+        return res.send({ error: 'missing _id' })
       }
       let project_name = req.params.project;
 

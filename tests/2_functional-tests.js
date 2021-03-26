@@ -194,25 +194,20 @@ suite('Functional Tests', function() {
             })
             .end((err,res)=>{
                 assert.equal(err, null)
-                assert.deepEqual(res.body, { error: 'could not delete', '_id': 'invalidid' })
+                assert.deepEqual(res.body, { error: 'could not delete'})
             })
     })
 
     test('Delete an issue with missing _id: DELETE request to /api/issues/{project}',()=>{
         chai.request(server)
             .delete('/api/issues/apitest')
-            .send('nothing')
+            .send({
+                _id: null,
+                dummy: 'dummy'
+            })
             .end((err,res)=>{
                 assert.equal(err, null)
-                assert.deepEqual(res.body,{ error: 'missing _id' })
+                assert.deepEqual(res.body, {error: "missing _id"})
             })
     })
-    
-
-
-
-
-    
-    
-    
 });
