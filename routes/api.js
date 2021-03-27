@@ -31,7 +31,14 @@ module.exports = function (app, collection) {
         if(req.query.status_text){
           filteredArray = filteredArray.filter(issues => issues.status_text === req.query.status_text)
         }
-        let openStatus = req.query.open === 'true' ? true : false
+        let openStatus
+        if(req.query.open === 'false'){
+          openStatus = false
+        }
+        if(req.query.open === 'true'){
+          openStatus = true
+        }
+        
         if(req.query.open){
           filteredArray = filteredArray.filter(issues => issues.open == openStatus)
         }
@@ -130,7 +137,8 @@ module.exports = function (app, collection) {
               arrayFilters: [{ "issue._id": ObjectID(req.body._id) }]
             })
           }
-          if (req.body.open) {
+          //close issue (checked)
+          if (Array.isArray(req.body.open)) { 
             collection.updateOne({ project_name: project_name }, {
               $set: {
                 "issues.$[issue].open": false
@@ -139,9 +147,20 @@ module.exports = function (app, collection) {
               arrayFilters: [{ "issue._id": ObjectID(req.body._id) }]
             })
           }
+          //open issue (unchecked)
+          if (req.body.open == '0') { 
+            console.log('unchecked')
+            collection.updateOne({ project_name: project_name }, {
+              $set: {
+                "issues.$[issue].open": true
+              }
+            }, {
+              arrayFilters: [{ "issue._id": ObjectID(req.body._id) }]
+            })
+          }
 
           // IF ANYTHING GETS UPDATED
-          if (req.body.issue_title || req.body.issue_text || req.body.created_by || req.body.assigned_to || req.body.status_text || req.body.open) {
+          if (req.body.issue_title || req.body.issue_text || req.body.created_by || req.body.assigned_to || req.body.status_text || req.body.open == '0' || Array.isArray(req.body.open)) {
             collection.updateOne({ project_name: project_name }, {
               $set: {
                 "issues.$[issue].updated_on": new Date()
@@ -151,19 +170,19 @@ module.exports = function (app, collection) {
             })
             res.send({
               result: 'successfully updated',
-              _id: req.body._id
+              _id: ObjectID(req.body._id)
             })
           }
 
           // IF NOTHING GETS UPDATED
           else{
-            res.send({ error: 'no update field(s) sent', '_id': req.body._id })
+            res.send({ error: 'no update field(s) sent', '_id': ObjectID(req.body._id) })
           }
         }
 
         // WHEN ID IS INVALID
         else {
-          res.send({ error: 'could not update', '_id': req.body._id })
+          res.send({ error: 'could not update', '_id': (req.body._id) })
         }
       })
     })
@@ -183,7 +202,7 @@ module.exports = function (app, collection) {
         if (selectedIssues.find(x => x._id == req.body._id)) {
           collection.updateOne({ project_name: project_name },
             { $pull: { issues:{ _id: ObjectID(req.body._id)}} })
-          res.send({ result: 'successfully deleted', '_id': req.body_id })
+          res.send({ result: 'successfully deleted', '_id': ObjectID(req.body_id) }) // why id is not showing up
         }
 
         //WHEN ID IS INVALID
