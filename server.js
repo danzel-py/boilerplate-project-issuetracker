@@ -21,7 +21,17 @@ app.use(cors({origin: '*'})); //For FCC testing purposes only
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
+//Sample front-end
+app.route('/:project/')
+  .get(function (req, res) {
+    res.sendFile(process.cwd() + '/views/issue.html');
+  });
+  
+  //Index page (static HTML)
+app.route('/')
+  .get(function (req, res) {
+    res.sendFile(process.cwd() + '/views/index.html');
+  });
 
 const MongoClient = require('mongodb').MongoClient;
 const uri = process.env.DB;
@@ -30,18 +40,7 @@ client.connect(err => {
   if(err) return console.log(err)
   const collection = client.db("issuetrackerDB").collection("projects");
 
-  //Sample front-end
-  app.route('/:project/')
-    .get(function (req, res) {
-      res.sendFile(process.cwd() + '/views/issue.html');
-    });
   
-  //Index page (static HTML)
-  app.route('/')
-    .get(function (req, res) {
-      res.sendFile(process.cwd() + '/views/index.html');
-     
-    });
   
   //For FCC testing purposes
   fccTestingRoutes(app);

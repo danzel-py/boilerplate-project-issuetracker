@@ -2,6 +2,7 @@
 
 const ObjectID = require('mongodb').ObjectID;
 
+
 module.exports = function(app, collection) {
 
   app.route('/api/issues/:project')
@@ -52,10 +53,10 @@ module.exports = function(app, collection) {
 
     .post(function(req, res) {
       let project_name = req.params.project
-      collection.findOne({ project_name: project_name }, (err, project) => {
+      collection.findOne({ project_name: project_name }, async (err, project) => {
         if (err) return console.log(err)
         if (!project) {
-          collection.insertOne({ project_name: project_name, issues: [] })
+          await collection.insertOne({ project_name: project_name, issues: [] })
         }
 
         if (req.body.issue_title && req.body.issue_text && req.body.created_by) {
