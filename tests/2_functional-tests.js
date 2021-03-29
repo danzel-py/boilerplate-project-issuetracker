@@ -71,11 +71,25 @@ suite('Functional Tests', function() {
       .end((err, res) => {
         assert.equal(err, null)
         assert.isArray(res.body)
+        assert.isObject(res.body[0])
         assert.include(res.body.map(e => e.created_by), 'by test2')
         assert.include(res.body.map(e => e.issue_text), 'text test2')
         assert.include(res.body.map(e => e.issue_title), 'title test2')
         assert.include(res.body.map(e => e.assigned_to), 'to test')
         assert.include(res.body.map(e => e.status_text), 'status test')
+
+        res.body.forEach((issue) => {
+          assert.property(issue, 'issue_title');
+          assert.property(issue, 'issue_text');
+          assert.property(issue, 'created_by');
+          assert.property(issue, 'assigned_to');
+          assert.property(issue, 'status_text');
+          assert.property(issue, 'open');
+          assert.property(issue, 'created_on');
+          assert.property(issue, 'updated_on');
+          assert.property(issue, '_id');
+        });
+
       })
   })
   test('View issues on a project with one filter: GET request to /api/issues/{project}', () => {
@@ -148,7 +162,7 @@ suite('Functional Tests', function() {
     chai.request(server)
       .put('/api/issues/apitest')
       .send({
-        _id: ObjectID('605ea97e3eb65d084a8ea5cc')
+        _id: '605ea97e3eb65d084a8ea5cc'
       })
       .end((err, res) => {
         assert.equal(err, null)
@@ -160,7 +174,8 @@ suite('Functional Tests', function() {
     chai.request(server)
       .put('/api/issues/apitest')
       .send({
-        _id: ObjectID('aaad6670aaa0da10a02630d3')
+        _id: ObjectID('aaad6670aaa0da10a02630d3'),
+        issue_text: 'ww'
       })
       .end((err, res) => {
         assert.equal(err, null)
@@ -193,7 +208,7 @@ suite('Functional Tests', function() {
       })
       .end((err, res) => {
         assert.equal(err, null)
-        assert.deepEqual(res.body, { error: 'could not delete' })
+        assert.deepInclude(res.body, { error: 'could not delete' })
       })
   })
 
